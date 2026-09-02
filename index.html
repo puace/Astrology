@@ -390,11 +390,15 @@
         const loginInput = setupInput.value;
         if (!loginInput) return;
         
+        const fid = await registerFaceId();
+        if (!fid) {
+          alert('O registro da biometria é obrigatório para continuar. Por favor, aceite salvar a chave-senha/Face ID.');
+          return;
+        }
+
         const authPayload = await encryptString('OK', loginInput);
         localStorage.setItem('astro_auth', authPayload);
-        
-        const fid = await registerFaceId();
-        if (fid) localStorage.setItem('astro_faceid', fid);
+        localStorage.setItem('astro_faceid', fid);
         
         loginPassword = loginInput;
         setupInput.value = '';
@@ -427,11 +431,12 @@
           const dec = await decryptString(authEnc, input);
           if (dec === 'OK') {
             const fid = localStorage.getItem('astro_faceid');
-            if (fid) {
-              const verified = await verifyFaceId(fid);
-              if (!verified) {
-                throw new Error('Biometria falhou ou foi cancelada.');
-              }
+            if (!fid) {
+              throw new Error('Biometria não configurada para este dispositivo.');
+            }
+            const verified = await verifyFaceId(fid);
+            if (!verified) {
+              throw new Error('Biometria falhou ou foi cancelada.');
             }
             
             loginPassword = input;
