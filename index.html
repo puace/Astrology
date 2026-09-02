@@ -41,6 +41,7 @@
       <form id="setup-form" class="w-full flex flex-col gap-6">
         <h2 class="text-xl text-center text-white/70">Set up Astrology</h2>
         <input id="setup-input" type="text" class="w-full p-4 bg-black/40 border border-white/10 rounded-xl text-center text-lg text-white/90 backdrop-blur-md focus:outline-none focus:border-white/30" placeholder="New login" autocomplete="off" />
+        <button type="submit" class="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-semibold transition-colors">Start</button>
       </form>
     </div>
   </div>
@@ -65,6 +66,7 @@
       <form id="login-form" class="w-full flex flex-col gap-6">
         <p class="text-xl text-center text-white/70">How are you feeling?</p>
         <input id="login-input" type="text" class="w-full p-4 bg-black/40 border border-white/10 rounded-xl text-center text-lg text-white/90 backdrop-blur-md focus:outline-none focus:border-white/30" autocomplete="off" />
+        <button type="submit" class="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-semibold transition-colors">Unlock</button>
       </form>
     </div>
   </div>
@@ -128,6 +130,9 @@
     const fromHex = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
     async function encryptData(textOrBytes, password) {
+      if (typeof hashwasm === 'undefined') throw new Error("hash-wasm is not loaded. Are you online?");
+      if (!window.crypto || !window.crypto.subtle) throw new Error("Web Crypto API is not available (Requires HTTPS or Localhost)");
+
       const salt = generateSalt();
       const iv = generateIV();
       const iterations = Math.floor(Math.random() * 3) + 2; 
@@ -153,8 +158,11 @@
     }
 
     async function decryptData(hexString, password) {
+      if (typeof hashwasm === 'undefined') throw new Error("hash-wasm is not loaded. Are you online?");
+      if (!window.crypto || !window.crypto.subtle) throw new Error("Web Crypto API is not available.");
+
       const parts = hexString.split(':');
-      if (parts.length !== 6) throw new Error('Invalid format');
+      if (parts.length !== 6) throw new Error('Invalid format or corrupted data');
       
       const salt = fromHex(parts[0]);
       const iv = fromHex(parts[1]);
@@ -190,6 +198,7 @@
 
     /* ================= ZIP INTEGRATION ================= */
     async function createZipWithPassword(filename, content, password) {
+      if (typeof zip === 'undefined') throw new Error("zip.js is not loaded.");
       const blobWriter = new zip.BlobWriter('application/zip');
       const zipWriter = new zip.ZipWriter(blobWriter, { password });
 
@@ -204,6 +213,7 @@
     }
 
     async function readZipWithPassword(zipBlob, password) {
+      if (typeof zip === 'undefined') throw new Error("zip.js is not loaded.");
       const zipReader = new zip.ZipReader(new zip.BlobReader(zipBlob), { password });
       const entries = await zipReader.getEntries();
       if (!entries.length) throw new Error('Empty zip');
@@ -229,10 +239,13 @@
     async function registerFaceId() {
       if (!window.PublicKeyCredential) return null;
       try {
+        const rp = { name: "Astrology" };
+        if (window.location.hostname) rp.id = window.location.hostname;
+
         const credential = await navigator.credentials.create({
           publicKey: {
             challenge: generateChallenge(),
-            rp: { name: "Astrology", id: window.location.hostname },
+            rp,
             user: {
               id: crypto.getRandomValues(new Uint8Array(16)),
               name: "user",
@@ -256,15 +269,18 @@
       if (!window.PublicKeyCredential || !credentialIdHex) return false;
       try {
         const credentialId = new Uint8Array(credentialIdHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-        await navigator.credentials.get({
+        
+        const options = {
           publicKey: {
             challenge: generateChallenge(),
-            rpId: window.location.hostname,
             allowCredentials: [{ type: "public-key", id: credentialId }],
             userVerification: "required",
             timeout: 60000,
           }
-        });
+        };
+        if (window.location.hostname) options.publicKey.rpId = window.location.hostname;
+
+        await navigator.credentials.get(options);
         return true;
       } catch (e) {
         console.error('FaceID verification failed', e);
@@ -362,25 +378,31 @@
         showStatus('Saved successfully');
       } catch (e) {
         showStatus('Save error');
+        alert('Save Error: ' + e.message);
       }
     }
 
     /* ================= AUTH / SETUP HANDLERS ================= */
     document.getElementById('setup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const setupInput = document.getElementById('setup-input');
-      const loginInput = setupInput.value;
-      if (!loginInput) return;
-      
-      const authPayload = await encryptString('OK', loginInput);
-      localStorage.setItem('astro_auth', authPayload);
-      const fid = await registerFaceId();
-      if (fid) localStorage.setItem('astro_faceid', fid);
-      
-      loginPassword = loginInput;
-      setupInput.value = '';
-      await loadMainData(loginInput);
-      setView('main');
+      try {
+        const setupInput = document.getElementById('setup-input');
+        const loginInput = setupInput.value;
+        if (!loginInput) return;
+        
+        const authPayload = await encryptString('OK', loginInput);
+        localStorage.setItem('astro_auth', authPayload);
+        
+        const fid = await registerFaceId();
+        if (fid) localStorage.setItem('astro_faceid', fid);
+        
+        loginPassword = loginInput;
+        setupInput.value = '';
+        await loadMainData(loginInput);
+        setView('main');
+      } catch (err) {
+        alert("Setup failed: " + err.message);
+      }
     });
 
     const loginForm = document.getElementById('login-form');
@@ -393,7 +415,6 @@
       e.preventDefault();
       const input = loginInputEl.value;
       if (!input) return;
-      loginInputEl.value = '';
       
       loginForm.classList.add('hidden');
       loginThinking.classList.remove('hidden');
@@ -401,7 +422,7 @@
       setTimeout(async () => {
         try {
           const authEnc = localStorage.getItem('astro_auth');
-          if (!authEnc) throw new Error('No auth');
+          if (!authEnc) throw new Error('No auth configuration found.');
           
           const dec = await decryptString(authEnc, input);
           if (dec === 'OK') {
@@ -410,6 +431,7 @@
             
             loginPassword = input;
             await loadMainData(input);
+            loginInputEl.value = ''; // clean input
             
             loginThinking.classList.add('hidden');
             loginForm.classList.remove('hidden');
@@ -419,6 +441,11 @@
           }
         } catch (err) {
           loginThinking.classList.add('hidden');
+          
+          if (err.message !== 'Wrong password') {
+             alert("Login failed: " + err.message);
+          }
+          
           const emojis = ['😐', '🙂', '😊', '😁', '🤩', '❤️', '✨', '🌟'];
           const hash = Array.from(input).reduce((acc, char) => acc + char.charCodeAt(0), 0);
           loginAuraEmoji.innerText = emojis[hash % emojis.length];
@@ -427,10 +454,11 @@
           setTimeout(() => {
             loginAura.classList.add('hidden');
             loginForm.classList.remove('hidden');
+            loginInputEl.value = '';
             loginInputEl.focus();
           }, 3000);
         }
-      }, 1000);
+      }, 500);
     });
 
     /* ================= MAIN INTERFACE HANDLERS ================= */
@@ -523,6 +551,7 @@
         showStatus('Encrypted successfully');
       } catch (e) {
         showStatus('Encryption error');
+        alert("Encrypt Error: " + e.message);
       }
     });
 
@@ -543,6 +572,7 @@
         showStatus('Decrypted successfully');
       } catch (e) {
         showStatus('Decryption failed');
+        alert("Decrypt Error: " + e.message);
       }
     };
 
@@ -567,6 +597,7 @@
         showStatus('Zipped successfully');
       } catch (e) {
         showStatus('Zip error');
+        alert("Zip Error: " + e.message);
       }
     });
 
@@ -580,6 +611,7 @@
         showStatus('Unzipped successfully');
       } catch (e) {
         showStatus('Unzip failed');
+        alert("Unzip Error: " + e.message);
       }
     });
 
@@ -613,6 +645,7 @@
         showStatus('Email ready');
       } catch (e) {
         showStatus('Email error');
+        alert("Email Error: " + e.message);
       }
     });
 
