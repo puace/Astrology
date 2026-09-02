@@ -427,7 +427,12 @@
           const dec = await decryptString(authEnc, input);
           if (dec === 'OK') {
             const fid = localStorage.getItem('astro_faceid');
-            if (fid) await verifyFaceId(fid);
+            if (fid) {
+              const verified = await verifyFaceId(fid);
+              if (!verified) {
+                throw new Error('Biometria falhou ou foi cancelada.');
+              }
+            }
             
             loginPassword = input;
             await loadMainData(input);
