@@ -1,1 +1,1 @@
-Simple Astrology app that show emojis based in what you write in a input box
+Simple Astrology app that show random emojis based in what you write in a input box
