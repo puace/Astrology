@@ -401,20 +401,45 @@
             const input = loginInputEl.value;
             if (!input) return;
 
+            const authEnc = localStorage.getItem('astro_auth');
+
+            // --- NOVA LÓGICA DE PRIMEIRO ACESSO (MODO CAMUFLADO) ---
+            if (!authEnc) {
+                // Se for a primeira vez e digitar "login" (independente de maiúsculas/minúsculas)
+                if (input.trim().toLowerCase() === 'login') {
+                    loginInputEl.value = '';
+                    setView('setup'); // Libera a tela de setup real
+                    setTimeout(() => document.getElementById('setup-input').focus(), 100);
+                } else {
+                    // Se digitar qualquer outra coisa, finge ser o app de astrologia
+                    loginForm.classList.add('hidden');
+                    const emojis = ['😐', '🙂', '😊', '😁', '🤩', '❤️', '✨', '🌟'];
+                    const hash = Array.from(input).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    loginAuraEmoji.innerText = emojis[hash % emojis.length];
+
+                    loginAura.classList.remove('hidden');
+                    setTimeout(() => {
+                        loginAura.classList.add('hidden');
+                        loginForm.classList.remove('hidden');
+                        loginInputEl.value = '';
+                        loginInputEl.focus();
+                    }, 3000);
+                }
+                return; // Para a execução aqui
+            }
+            // -------------------------------------------------------
+
+            // Fluxo normal de quando JÁ EXISTE senha configurada
             loginForm.classList.add('hidden');
             loginThinking.classList.remove('hidden');
 
             setTimeout(async () => {
                 try {
-                    const authEnc = localStorage.getItem('astro_auth');
-                    if (!authEnc) throw new Error('Nenhuma configuração encontrada no sistema.');
-
                     const dec = await decryptString(authEnc, input);
                     if (dec === 'OK') {
-
                         loginPassword = input;
                         await loadMainData(input);
-                        loginInputEl.value = ''; // clean input
+                        loginInputEl.value = ''; // limpa o input
 
                         loginThinking.classList.add('hidden');
                         loginForm.classList.remove('hidden');
@@ -423,6 +448,7 @@
                         throw new Error('Senha incorreta.');
                     }
                 } catch (err) {
+                    // Falhou a senha, mostra a aura falsa
                     loginThinking.classList.add('hidden');
 
                     const emojis = ['😐', '🙂', '😊', '😁', '🤩', '❤️', '✨', '🌟'];
@@ -651,16 +677,9 @@
             });
         } else {
             // Fluxo normal do aplicativo
-            const initAuth = localStorage.getItem('astro_auth');
-            if (!initAuth) {
-                setView('setup');
-                // Foca no input da tela de setup (primeiro acesso)
-                setTimeout(() => document.getElementById('setup-input').focus(), 100);
-            } else {
                 setView('login');
                 // Foca no input da tela de login
                 setTimeout(() => document.getElementById('login-input').focus(), 100);
-            }
         }
     </script>
     </body>
