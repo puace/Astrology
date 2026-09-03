@@ -1,674 +1,618 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#000000" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
-  <meta name="apple-mobile-web-app-title" content="Astrology" />
-  <title>Astrology</title>
-  
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Link corrigido para o index UMD da biblioteca de criptografia -->
-  <script src="https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/index.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.53/dist/zip.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="apple-mobile-web-app-title" content="Astrology" />
+    <title>Astrology</title>
 
-  <style>
-    @keyframes fadeInZoom {
-      0% { opacity: 0; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    .animate-fade-in-zoom {
-      animation: fadeInZoom 0.5s ease-out forwards;
-    }
-  </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link corrigido para o index UMD da biblioteca de criptografia -->
+    <script src="https://cdn.jsdelivr.net/npm/hash-wasm@4/dist/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.53/dist/zip.min.js"></script>
+
+    <style>
+        @keyframes fadeInZoom {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-fade-in-zoom {
+            animation: fadeInZoom 0.5s ease-out forwards;
+        }
+    </style>
 </head>
 <body class="bg-black text-white antialiased overflow-hidden select-none touch-pan-y">
-  
-  <!-- INITIAL LOADER -->
-  <div id="init-view" class="h-screen bg-black"></div>
 
-  <!-- SETUP VIEW -->
-  <div id="setup-view" class="h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-950 flex flex-col items-center justify-center p-4 relative overflow-hidden hidden">
-    <div class="absolute top-12 left-10 text-4xl opacity-40">✨</div>
-    <div class="absolute top-24 right-12 text-5xl opacity-40">🌙</div>
-    <div class="absolute bottom-24 left-16 text-6xl opacity-40">🔮</div>
-    <div class="absolute bottom-12 right-10 text-4xl opacity-40">⭐</div>
-    
-    <div class="z-10 w-full max-w-sm flex flex-col items-center gap-6">
-      <h1 class="text-2xl font-serif text-white/90 mb-4 tracking-wide">Analyze your aura</h1>
-      <form id="setup-form" class="w-full flex flex-col gap-6">
-        <h2 class="text-xl text-center text-white/70">Set up Astrology</h2>
-        <input id="setup-input" type="text" class="w-full p-4 bg-black/40 border border-white/10 rounded-xl text-center text-lg text-white/90 backdrop-blur-md focus:outline-none focus:border-white/30" placeholder="New login" autocomplete="off" />
-        <button type="submit" class="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-semibold transition-colors">Start</button>
-      </form>
-    </div>
-  </div>
+    <!-- INITIAL LOADER -->
+    <div id="init-view" class="h-screen bg-black"></div>
 
-  <!-- LOGIN VIEW -->
-  <div id="login-view" class="h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-950 flex flex-col items-center justify-center p-4 relative overflow-hidden hidden">
-    <div class="absolute top-12 left-10 text-4xl opacity-40">✨</div>
-    <div class="absolute top-24 right-12 text-5xl opacity-40">🌙</div>
-    <div class="absolute bottom-24 left-16 text-6xl opacity-40">🔮</div>
-    <div class="absolute bottom-12 right-10 text-4xl opacity-40">⭐</div>
-    
-    <div class="z-10 w-full max-w-sm flex flex-col items-center gap-6">
-      <h1 class="text-2xl font-serif text-white/90 mb-4 tracking-wide">Analyze your aura</h1>
-      
-      <p id="login-thinking" class="text-xl text-white/60 hidden">thinking...</p>
-      
-      <div id="login-aura" class="flex flex-col items-center gap-4 animate-fade-in-zoom hidden">
-        <p class="text-xl text-white/80">Your aura is:</p>
-        <div id="login-aura-emoji" class="text-8xl drop-shadow-2xl"></div>
-      </div>
-      
-      <form id="login-form" class="w-full flex flex-col gap-6">
-        <p class="text-xl text-center text-white/70">How are you feeling?</p>
-        <input id="login-input" type="text" class="w-full p-4 bg-black/40 border border-white/10 rounded-xl text-center text-lg text-white/90 backdrop-blur-md focus:outline-none focus:border-white/30" autocomplete="off" />        
-      </form>
-    </div>
-  </div>
+    <!-- SETUP VIEW -->
+    <div id="setup-view" class="h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-950 flex flex-col items-center justify-center p-4 relative overflow-hidden hidden">
+        <div class="absolute top-12 left-10 text-4xl opacity-40">✨</div>
+        <div class="absolute top-24 right-12 text-5xl opacity-40">🌙</div>
+        <div class="absolute bottom-24 left-16 text-6xl opacity-40">🔮</div>
+        <div class="absolute bottom-12 right-10 text-4xl opacity-40">⭐</div>
 
-  <!-- MAIN VIEW -->
-  <div id="main-view" class="flex flex-col h-[100dvh] p-2 gap-2 bg-black text-white w-full max-w-md mx-auto hidden">
-    <textarea id="main-text" class="flex-1 bg-gray-900 border border-gray-700 p-2 text-base rounded resize-none focus:outline-none focus:ring-1 focus:ring-gray-500"></textarea>
-    
-    <!-- Row 1: Search -->
-    <div class="flex items-center gap-1">
-      <input id="search-input" type="text" placeholder="Search..." class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
-      <button id="btn-search-prev" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
-      <button id="btn-search-next" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
-      <span id="search-status" class="text-xs w-10 text-center text-gray-400 shrink-0">0/0</span>
+        <div class="z-10 w-full max-w-sm flex flex-col items-center gap-6">
+            <h1 class="text-2xl font-serif text-white/90 mb-4 tracking-wide">Analyze your aura</h1>
+            <form id="setup-form" class="w-full flex flex-col gap-6">
+                <h2 class="text-xl text-center text-white/70">Set up Astrology</h2>
+                <input id="setup-input" type="text" class="w-full p-4 bg-black/40 border border-white/10 rounded-xl text-center text-lg text-white/90 backdrop-blur-md focus:outline-none focus:border-white/30" placeholder="New login" autocomplete="off" />
+                <button type="submit" class="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-semibold transition-colors">Start</button>
+            </form>
+        </div>
     </div>
 
-    <!-- Row 2: File Handling -->
-    <div class="flex items-center gap-1">
-      <input id="filename-input" type="text" placeholder="Filename..." class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
-      <input type="file" id="file-input" class="hidden" multiple />
-      <input type="file" id="photo-input" class="hidden" multiple accept="image/*" />
-      <button id="btn-file" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg></button>
-      <button id="btn-photo" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></button>
+    <!-- LOGIN VIEW -->
+    <div id="login-view" class="h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-fuchsia-950 flex flex-col items-center justify-center p-4 relative overflow-hidden hidden">
+        <div class="absolute top-12 left-10 text-4xl opacity-40">✨</div>
+        <div class="absolute top-24 right-12 text-5xl opacity-40">🌙</div>
+        <div class="absolute bottom-24 left-16 text-6xl opacity-40">🔮</div>
+        <div class="absolute bottom-12 right-10 text-4xl opacity-40">⭐</div>
+
+        <div class="z-10 w-full max-w-sm flex flex-col items-center gap-6">
+            <h1 class="text-2xl font-serif text-white/90 mb-4 tracking-wide">Analyze your aura</h1>
+
+            <p id="login-thinking" class="text-xl text-white/60 hidden">thinking...</p>
+
+            <div id="login-aura" class="flex flex-col items-center gap-4 animate-fade-in-zoom hidden">
+                <p class="text-xl text-white/80">Your aura is:</p>
+                <div id="login-aura-emoji" class="text-8xl drop-shadow-2xl"></div>
+            </div>
+
+            <form id="login-form" class="w-full flex flex-col gap-6">
+                <p class="text-xl text-center text-white/70">How are you feeling?</p>
+                <input id="login-input" type="text" class="w-full p-4 bg-black/40 border border-white/10 rounded-xl text-center text-lg text-white/90 backdrop-blur-md focus:outline-none focus:border-white/30" autocomplete="off" />
+                <button type="submit" class="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-white font-semibold transition-colors">Start</button>
+            </form>
+        </div>
     </div>
 
-    <!-- Row 3: Password / Settings -->
-    <div class="flex items-center gap-1">
-      <input id="password-input" type="text" placeholder="Password" class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
-      <button id="btn-settings" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button>
+    <!-- MAIN VIEW -->
+    <div id="main-view" class="flex flex-col h-[100dvh] p-2 gap-2 bg-black text-white w-full max-w-md mx-auto hidden">
+        <textarea id="main-text" class="flex-1 bg-gray-900 border border-gray-700 p-2 text-base rounded resize-none focus:outline-none focus:ring-1 focus:ring-gray-500"></textarea>
+
+        <!-- Row 1: Search -->
+        <div class="flex items-center gap-1">
+            <input id="search-input" type="text" placeholder="Search..." class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
+            <button id="btn-search-prev" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg></button>
+            <button id="btn-search-next" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg></button>
+            <span id="search-status" class="text-xs w-10 text-center text-gray-400 shrink-0">0/0</span>
+        </div>
+
+        <!-- Row 2: File Handling -->
+        <div class="flex items-center gap-1">
+            <input id="filename-input" type="text" placeholder="Filename..." class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
+            <input type="file" id="file-input" class="hidden" multiple />
+            <input type="file" id="photo-input" class="hidden" multiple accept="image/*" />
+            <button id="btn-file" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /></svg></button>
+            <button id="btn-photo" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /><circle cx="9" cy="9" r="2" /><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></svg></button>
+        </div>
+
+        <!-- Row 3: Password / Settings -->
+        <div class="flex items-center gap-1">
+            <input id="password-input" type="text" placeholder="Password" class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
+            <button id="btn-settings" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></svg></button>
+        </div>
+
+        <!-- Row 4: Email -->
+        <div class="flex items-center gap-1">
+            <input id="email-input" type="text" placeholder="Emails (csv)" class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
+            <button id="btn-email" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2" /><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></svg></button>
+        </div>
+
+        <!-- Row 5: Cryptography Actions -->
+        <div class="flex items-center gap-1">
+            <button id="btn-enc" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">ENC</button>
+            <button id="btn-dec" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">DEC</button>
+            <button id="btn-dec-textarea" class="bg-gray-800 p-2 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7" /><path d="M12 19V5" /></svg></button>
+            <button id="btn-save" class="bg-gray-800 p-2 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" /><path d="M14 2v4a2 2 0 0 0 2 2h4" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg></button>
+        </div>
+
+        <!-- Row 6: ZIP Actions -->
+        <div class="flex items-center gap-1">
+            <button id="btn-zip" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">ZIP</button>
+            <button id="btn-unzip" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">UNZIP</button>
+        </div>
+
+        <div id="status-text" class="text-xs text-center text-gray-400 h-4 mt-0.5 mb-1 truncate"></div>
     </div>
 
-    <!-- Row 4: Email -->
-    <div class="flex items-center gap-1">
-      <input id="email-input" type="text" placeholder="Emails (csv)" class="flex-1 bg-gray-900 border border-gray-700 px-2 py-1.5 text-sm rounded focus:outline-none" autocomplete="off" />
-      <button id="btn-email" class="bg-gray-800 p-1.5 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></button>
-    </div>
+    <script>
+        /* ================= CRYPTOGRAPHY & UTILS ================= */
+        const generateSalt = () => crypto.getRandomValues(new Uint8Array(16));
+        const generateIV = () => crypto.getRandomValues(new Uint8Array(12));
+        const toHex = (buf) => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+        const fromHex = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
-    <!-- Row 5: Cryptography Actions -->
-    <div class="flex items-center gap-1">
-      <button id="btn-enc" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">ENC</button>
-      <button id="btn-dec" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">DEC</button>
-      <button id="btn-dec-textarea" class="bg-gray-800 p-2 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg></button>
-      <button id="btn-save" class="bg-gray-800 p-2 rounded active:bg-gray-700"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></button>
-    </div>
-    
-    <!-- Row 6: ZIP Actions -->
-    <div class="flex items-center gap-1">
-      <button id="btn-zip" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">ZIP</button>
-      <button id="btn-unzip" class="flex-1 bg-gray-800 py-2 rounded text-sm font-medium active:bg-gray-700">UNZIP</button>
-    </div>
-    
-    <div id="status-text" class="text-xs text-center text-gray-400 h-4 mt-0.5 mb-1 truncate"></div>
-  </div>
+        async function encryptData(textOrBytes, password) {
+            if (typeof hashwasm === 'undefined') throw new Error("A biblioteca de criptografia não foi carregada. Verifique sua conexão à internet ou recarregue a página.");
+            if (!window.crypto || !window.crypto.subtle) throw new Error("A Web Crypto API não está disponível (Requer HTTPS/Conexão Segura).");
 
-  <script>
-    /* ================= CRYPTOGRAPHY & UTILS ================= */
-    const generateSalt = () => crypto.getRandomValues(new Uint8Array(16));
-    const generateIV = () => crypto.getRandomValues(new Uint8Array(12));
-    const toHex = (buf) => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    const fromHex = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+            const salt = generateSalt();
+            const iv = generateIV();
+            const iterations = Math.floor(Math.random() * 3) + 2;
+            const memorySize = (Math.floor(Math.random() * 32) + 32) * 1024;
+            const parallelism = Math.floor(Math.random() * 2) + 1;
 
-    async function encryptData(textOrBytes, password) {
-      if (typeof hashwasm === 'undefined') throw new Error("A biblioteca de criptografia não foi carregada. Verifique sua conexão à internet ou recarregue a página.");
-      if (!window.crypto || !window.crypto.subtle) throw new Error("A Web Crypto API não está disponível (Requer HTTPS/Conexão Segura).");
+            const keyBytes = await hashwasm.argon2id({
+                password,
+                salt,
+                parallelism,
+                iterations,
+                memorySize,
+                hashLength: 32,
+                outputType: 'binary',
+            });
 
-      const salt = generateSalt();
-      const iv = generateIV();
-      const iterations = Math.floor(Math.random() * 3) + 2; 
-      const memorySize = (Math.floor(Math.random() * 32) + 32) * 1024;
-      const parallelism = Math.floor(Math.random() * 2) + 1; 
-      
-      const keyBytes = await hashwasm.argon2id({
-        password,
-        salt,
-        parallelism,
-        iterations,
-        memorySize,
-        hashLength: 32,
-        outputType: 'binary',
-      });
-      
-      const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
-      const data = typeof textOrBytes === 'string' ? new TextEncoder().encode(textOrBytes) : textOrBytes;
-      const cipherBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
-      
-      const cipher = new Uint8Array(cipherBuffer);
-      return `${toHex(salt)}:${toHex(iv)}:${iterations}:${memorySize}:${parallelism}:${toHex(cipher)}`;
-    }
+            const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
+            const data = typeof textOrBytes === 'string' ? new TextEncoder().encode(textOrBytes) : textOrBytes;
+            const cipherBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
 
-    async function decryptData(hexString, password) {
-      if (typeof hashwasm === 'undefined') throw new Error("A biblioteca de criptografia não foi carregada. Verifique sua conexão à internet.");
-      if (!window.crypto || !window.crypto.subtle) throw new Error("A Web Crypto API não está disponível.");
-
-      const parts = hexString.split(':');
-      if (parts.length !== 6) throw new Error('Formato inválido ou dados corrompidos.');
-      
-      const salt = fromHex(parts[0]);
-      const iv = fromHex(parts[1]);
-      const iterations = parseInt(parts[2], 10);
-      const memorySize = parseInt(parts[3], 10);
-      const parallelism = parseInt(parts[4], 10);
-      const cipher = fromHex(parts[5]);
-      
-      const keyBytes = await hashwasm.argon2id({
-        password,
-        salt,
-        parallelism,
-        iterations,
-        memorySize,
-        hashLength: 32,
-        outputType: 'binary',
-      });
-      
-      const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['decrypt']);
-      const plainBuffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
-      
-      return new Uint8Array(plainBuffer);
-    }
-
-    async function encryptString(text, password) {
-      return encryptData(text, password);
-    }
-
-    async function decryptString(hexString, password) {
-      const bytes = await decryptData(hexString, password);
-      return new TextDecoder().decode(bytes);
-    }
-
-    /* ================= ZIP INTEGRATION ================= */
-    async function createZipWithPassword(filename, content, password) {
-      if (typeof zip === 'undefined') throw new Error("A biblioteca de compressão não foi carregada.");
-      const blobWriter = new zip.BlobWriter('application/zip');
-      const zipWriter = new zip.ZipWriter(blobWriter, { password });
-
-      if (typeof content === 'string') {
-        await zipWriter.add(filename, new zip.TextReader(content));
-      } else {
-        await zipWriter.add(filename, new zip.BlobReader(content));
-      }
-
-      await zipWriter.close();
-      return blobWriter.getData();
-    }
-
-    async function readZipWithPassword(zipBlob, password) {
-      if (typeof zip === 'undefined') throw new Error("A biblioteca de compressão não foi carregada.");
-      const zipReader = new zip.ZipReader(new zip.BlobReader(zipBlob), { password });
-      const entries = await zipReader.getEntries();
-      if (!entries.length) throw new Error('Arquivo vazio.');
-
-      const entry = entries[0];
-      if (!entry.getData) throw new Error('A entrada não contém dados legíveis.');
-
-      const blobWriter = new zip.BlobWriter();
-      const blob = await entry.getData(blobWriter);
-      const arrayBuffer = await blob.arrayBuffer();
-      
-      await zipReader.close();
-
-      return {
-        filename: entry.filename,
-        content: new Uint8Array(arrayBuffer),
-      };
-    }
-
-    /* ================= FACE ID / BIOMETRICS ================= */
-    const generateChallenge = () => crypto.getRandomValues(new Uint8Array(32));
-
-    async function registerFaceId() {
-      if (!window.PublicKeyCredential) return null;
-      try {
-        const rp = { name: "Astrology" };
-        if (window.location.hostname) rp.id = window.location.hostname;
-
-        const credential = await navigator.credentials.create({
-          publicKey: {
-            challenge: generateChallenge(),
-            rp,
-            user: {
-              id: crypto.getRandomValues(new Uint8Array(16)),
-              name: "user",
-              displayName: "User"
-            },
-            pubKeyCredParams: [{ type: "public-key", alg: -7 }],
-            authenticatorSelection: { userVerification: "required" },
-            timeout: 60000,
-          }
-        });
-        if (credential && credential.rawId) {
-          return Array.from(new Uint8Array(credential.rawId)).map(b => b.toString(16).padStart(2, '0')).join('');
+            const cipher = new Uint8Array(cipherBuffer);
+            return `${toHex(salt)}:${toHex(iv)}:${iterations}:${memorySize}:${parallelism}:${toHex(cipher)}`;
         }
-      } catch (e) {
-        console.error('Falha no registro de biometria', e);
-      }
-      return null;
-    }
 
-    async function verifyFaceId(credentialIdHex) {
-      if (!window.PublicKeyCredential || !credentialIdHex) return false;
-      try {
-        const credentialId = new Uint8Array(credentialIdHex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-        
-        const options = {
-          publicKey: {
-            challenge: generateChallenge(),
-            allowCredentials: [{ type: "public-key", id: credentialId }],
-            userVerification: "required",
-            timeout: 60000,
-          }
+        async function decryptData(hexString, password) {
+            if (typeof hashwasm === 'undefined') throw new Error("A biblioteca de criptografia não foi carregada. Verifique sua conexão à internet.");
+            if (!window.crypto || !window.crypto.subtle) throw new Error("A Web Crypto API não está disponível.");
+
+            const parts = hexString.split(':');
+            if (parts.length !== 6) throw new Error('Formato inválido ou dados corrompidos.');
+
+            const salt = fromHex(parts[0]);
+            const iv = fromHex(parts[1]);
+            const iterations = parseInt(parts[2], 10);
+            const memorySize = parseInt(parts[3], 10);
+            const parallelism = parseInt(parts[4], 10);
+            const cipher = fromHex(parts[5]);
+
+            const keyBytes = await hashwasm.argon2id({
+                password,
+                salt,
+                parallelism,
+                iterations,
+                memorySize,
+                hashLength: 32,
+                outputType: 'binary',
+            });
+
+            const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['decrypt']);
+            const plainBuffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+
+            return new Uint8Array(plainBuffer);
+        }
+
+        async function encryptString(text, password) {
+            return encryptData(text, password);
+        }
+
+        async function decryptString(hexString, password) {
+            const bytes = await decryptData(hexString, password);
+            return new TextDecoder().decode(bytes);
+        }
+
+        /* ================= ZIP INTEGRATION ================= */
+        async function createZipWithPassword(filename, content, password) {
+            if (typeof zip === 'undefined') throw new Error("A biblioteca de compressão não foi carregada.");
+            const blobWriter = new zip.BlobWriter('application/zip');
+            const zipWriter = new zip.ZipWriter(blobWriter, { password });
+
+            if (typeof content === 'string') {
+                await zipWriter.add(filename, new zip.TextReader(content));
+            } else {
+                await zipWriter.add(filename, new zip.BlobReader(content));
+            }
+
+            await zipWriter.close();
+            return blobWriter.getData();
+        }
+
+        async function readZipWithPassword(zipBlob, password) {
+            if (typeof zip === 'undefined') throw new Error("A biblioteca de compressão não foi carregada.");
+            const zipReader = new zip.ZipReader(new zip.BlobReader(zipBlob), { password });
+            const entries = await zipReader.getEntries();
+            if (!entries.length) throw new Error('Arquivo vazio.');
+
+            const entry = entries[0];
+            if (!entry.getData) throw new Error('A entrada não contém dados legíveis.');
+
+            const blobWriter = new zip.BlobWriter();
+            const blob = await entry.getData(blobWriter);
+            const arrayBuffer = await blob.arrayBuffer();
+
+            await zipReader.close();
+
+            return {
+                filename: entry.filename,
+                content: new Uint8Array(arrayBuffer),
+            };
+        }
+
+   
+
+
+        /* ================= APPLICATION STATE ================= */
+        let appState = 'init';
+        let loginPassword = '';
+        let selectedFiles = [];
+        let searchTerm = '';
+        let searchMatches = [];
+        let searchIndex = 0;
+        let searchTimeout = null; // Para o debounce
+
+        // View References
+        const initView = document.getElementById('init-view');
+        const setupView = document.getElementById('setup-view');
+        const loginView = document.getElementById('login-view');
+        const mainView = document.getElementById('main-view');
+
+        const setView = (view) => {
+            initView.classList.add('hidden');
+            setupView.classList.add('hidden');
+            loginView.classList.add('hidden');
+            mainView.classList.add('hidden');
+            if (view === 'init') initView.classList.remove('hidden');
+            if (view === 'setup') setupView.classList.remove('hidden');
+            if (view === 'login' || view === 'aura' || view === 'thinking') loginView.classList.remove('hidden');
+            if (view === 'main') mainView.classList.remove('hidden');
+            appState = view;
         };
-        if (window.location.hostname) options.publicKey.rpId = window.location.hostname;
 
-        await navigator.credentials.get(options);
-        return true;
-      } catch (e) {
-        console.error('Falha na verificação de biometria', e);
-        return false;
-      }
-    }
+        const showStatus = (msg) => {
+            document.getElementById('status-text').innerText = msg;
+        };
 
-    /* ================= APPLICATION STATE ================= */
-    let appState = 'init';
-    let loginPassword = '';
-    let selectedFiles = [];
-    let searchTerm = '';
-    let searchMatches = [];
-    let searchIndex = 0;
-    let searchTimeout = null; // Para o debounce
+        const downloadBlobHelper = (blob, name) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = name;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
 
-    // View References
-    const initView = document.getElementById('init-view');
-    const setupView = document.getElementById('setup-view');
-    const loginView = document.getElementById('login-view');
-    const mainView = document.getElementById('main-view');
+        const generateDateName = (prefix = 'Astrology data') => {
+            const d = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${prefix} ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
+        };
 
-    const setView = (view) => {
-      initView.classList.add('hidden');
-      setupView.classList.add('hidden');
-      loginView.classList.add('hidden');
-      mainView.classList.add('hidden');
-      if (view === 'init') initView.classList.remove('hidden');
-      if (view === 'setup') setupView.classList.remove('hidden');
-      if (view === 'login' || view === 'aura' || view === 'thinking') loginView.classList.remove('hidden');
-      if (view === 'main') mainView.classList.remove('hidden');
-      appState = view;
-    };
+        // DOM References (Main Page)
+        const elMainText = document.getElementById('main-text');
+        const elPasswordInput = document.getElementById('password-input');
+        const elEmailInput = document.getElementById('email-input');
+        const elFilenameInput = document.getElementById('filename-input');
+        const elFileInput = document.getElementById('file-input');
+        const elPhotoInput = document.getElementById('photo-input');
+        const elSearchInput = document.getElementById('search-input');
+        const elSearchStatus = document.getElementById('search-status');
 
-    const showStatus = (msg) => {
-      document.getElementById('status-text').innerText = msg;
-    };
+        /* ================= DATA LOADING ================= */
+        async function loadMainData(pwd) {
+            try {
+                const dataEnc = localStorage.getItem('astro_data');
+                if (dataEnc) elMainText.value = await decryptString(dataEnc, pwd);
 
-    const downloadBlobHelper = (blob, name) => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = name;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
+                const passEnc = localStorage.getItem('astro_passfield');
+                if (passEnc) elPasswordInput.value = await decryptString(passEnc, pwd);
 
-    const generateDateName = (prefix = 'Astrology data') => {
-      const d = new Date();
-      const pad = (n) => n.toString().padStart(2, '0');
-      return `${prefix} ${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}-${pad(d.getMinutes())}-${pad(d.getSeconds())}`;
-    };
-
-    // DOM References (Main Page)
-    const elMainText = document.getElementById('main-text');
-    const elPasswordInput = document.getElementById('password-input');
-    const elEmailInput = document.getElementById('email-input');
-    const elFilenameInput = document.getElementById('filename-input');
-    const elFileInput = document.getElementById('file-input');
-    const elPhotoInput = document.getElementById('photo-input');
-    const elSearchInput = document.getElementById('search-input');
-    const elSearchStatus = document.getElementById('search-status');
-
-    /* ================= DATA LOADING ================= */
-    async function loadMainData(pwd) {
-      try {
-        const dataEnc = localStorage.getItem('astro_data');
-        if (dataEnc) elMainText.value = await decryptString(dataEnc, pwd);
-        
-        const passEnc = localStorage.getItem('astro_passfield');
-        if (passEnc) elPasswordInput.value = await decryptString(passEnc, pwd);
-        
-        const emailsEnc = localStorage.getItem('astro_emails');
-        if (emailsEnc) elEmailInput.value = await decryptString(emailsEnc, pwd);
-      } catch (e) {
-        console.error('Erro ao carregar os dados', e);
-      }
-    }
-
-    async function saveText() {
-      if (!loginPassword) return;
-      showStatus('Salvando...');
-      try {
-        const text = elMainText.value;
-        const visiblePassword = elPasswordInput.value;
-        const emails = elEmailInput.value;
-
-        const enc = await encryptString(text, loginPassword);
-        localStorage.setItem('astro_data', enc);
-        
-        const pEnc = await encryptString(visiblePassword, loginPassword);
-        localStorage.setItem('astro_passfield', pEnc);
-        
-        const eEnc = await encryptString(emails, loginPassword);
-        localStorage.setItem('astro_emails', eEnc);
-        showStatus('Salvo com sucesso');
-      } catch (e) {
-        showStatus('Erro ao salvar');
-        alert('Erro ao salvar: ' + e.message);
-      }
-    }
-
-    /* ================= AUTH / SETUP HANDLERS ================= */
-    document.getElementById('setup-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        const setupInput = document.getElementById('setup-input');
-        const loginInput = setupInput.value;
-        if (!loginInput) return;
-        
-        const fid = await registerFaceId();
-        if (!fid) {
-          alert('O registro da biometria é obrigatório para continuar. Por favor, aceite salvar a chave-senha/Face ID.');
-          return;
-        }
-
-        const authPayload = await encryptString('OK', loginInput);
-        localStorage.setItem('astro_auth', authPayload);
-        localStorage.setItem('astro_faceid', fid);
-        
-        loginPassword = loginInput;
-        setupInput.value = '';
-        await loadMainData(loginInput);
-        setView('main');
-      } catch (err) {
-        console.error("Erro na configuração", err);
-      }
-    });
-
-    const loginForm = document.getElementById('login-form');
-    const loginInputEl = document.getElementById('login-input');
-    const loginThinking = document.getElementById('login-thinking');
-    const loginAura = document.getElementById('login-aura');
-    const loginAuraEmoji = document.getElementById('login-aura-emoji');
-
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const input = loginInputEl.value;
-      if (!input) return;
-      
-      loginForm.classList.add('hidden');
-      loginThinking.classList.remove('hidden');
-      
-      setTimeout(async () => {
-        try {
-          const authEnc = localStorage.getItem('astro_auth');
-          if (!authEnc) throw new Error('Nenhuma configuração encontrada no sistema.');
-          
-          const dec = await decryptString(authEnc, input);
-          if (dec === 'OK') {
-            const fid = localStorage.getItem('astro_faceid');
-            if (!fid) {
-              throw new Error('Biometria não configurada para este dispositivo.');
+                const emailsEnc = localStorage.getItem('astro_emails');
+                if (emailsEnc) elEmailInput.value = await decryptString(emailsEnc, pwd);
+            } catch (e) {
+                console.error('Erro ao carregar os dados', e);
             }
-            const verified = await verifyFaceId(fid);
-            if (!verified) {
-              throw new Error('Biometria falhou ou foi cancelada.');
+        }
+
+        async function saveText() {
+            if (!loginPassword) return;
+            showStatus('Salvando...');
+            try {
+                const text = elMainText.value;
+                const visiblePassword = elPasswordInput.value;
+                const emails = elEmailInput.value;
+
+                const enc = await encryptString(text, loginPassword);
+                localStorage.setItem('astro_data', enc);
+
+                const pEnc = await encryptString(visiblePassword, loginPassword);
+                localStorage.setItem('astro_passfield', pEnc);
+
+                const eEnc = await encryptString(emails, loginPassword);
+                localStorage.setItem('astro_emails', eEnc);
+                showStatus('Salvo com sucesso');
+            } catch (e) {
+                showStatus('Erro ao salvar');
+                alert('Erro ao salvar: ' + e.message);
             }
-            
-            loginPassword = input;
-            await loadMainData(input);
-            loginInputEl.value = ''; // clean input
-            
-            loginThinking.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-            setView('main');
-          } else {
-            throw new Error('Senha incorreta.');
-          }
-        } catch (err) {
-          loginThinking.classList.add('hidden');
-          
-          const emojis = ['😐', '🙂', '😊', '😁', '🤩', '❤️', '✨', '🌟'];
-          const hash = Array.from(input).reduce((acc, char) => acc + char.charCodeAt(0), 0);
-          loginAuraEmoji.innerText = emojis[hash % emojis.length];
-          
-          loginAura.classList.remove('hidden');
-          setTimeout(() => {
-            loginAura.classList.add('hidden');
-            loginForm.classList.remove('hidden');
-            loginInputEl.value = '';
-            loginInputEl.focus();
-          }, 3000);
-        }
-      }, 500);
-    });
-
-    /* ================= MAIN INTERFACE HANDLERS ================= */
-    document.getElementById('btn-save').addEventListener('click', saveText);
-    document.getElementById('btn-settings').addEventListener('click', () => setView('setup'));
-
-    // Search Handlers
-    const updateSearchStatus = () => {
-      elSearchStatus.innerText = searchMatches.length > 0 ? `${searchIndex + 1}/${searchMatches.length}` : '0/0';
-    };
-
-    const focusMatch = (index, matches, term) => {
-      if (matches.length === 0) return;
-      const start = matches[index];
-      const end = start + term.length;
-      elMainText.focus();
-      elMainText.setSelectionRange(start, end);
-      const proportion = start / elMainText.value.length;
-      elMainText.scrollTop = Math.max(0, proportion * elMainText.scrollHeight - (elMainText.clientHeight / 2));
-    };
-
-    const performSearch = () => {
-      searchTerm = elSearchInput.value;
-      if (!searchTerm) {
-        searchMatches = [];
-        updateSearchStatus();
-        showStatus('');
-        return;
-      }
-      const matches = [];
-      let i = 0;
-      const lowerText = elMainText.value.toLowerCase();
-      const lowerTerm = searchTerm.toLowerCase();
-      while ((i = lowerText.indexOf(lowerTerm, i)) !== -1) {
-        matches.push(i);
-        i += searchTerm.length;
-      }
-      searchMatches = matches;
-      if (matches.length > 0) {
-        searchIndex = 0;
-        focusMatch(0, matches, searchTerm);
-        showStatus(`Encontradas ${matches.length} correspondências`);
-      } else {
-        showStatus('Nenhum resultado');
-      }
-      updateSearchStatus();
-    };
-
-    // Implementação do debounce no campo de busca (1 segundo)
-    elSearchInput.addEventListener('input', () => {
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(performSearch, 1000);
-    });
-
-    document.getElementById('btn-search-prev').addEventListener('click', () => {
-      if (searchMatches.length === 0) return;
-      searchIndex = (searchIndex - 1 + searchMatches.length) % searchMatches.length;
-      focusMatch(searchIndex, searchMatches, searchTerm);
-      updateSearchStatus();
-    });
-
-    document.getElementById('btn-search-next').addEventListener('click', () => {
-      if (searchMatches.length === 0) return;
-      searchIndex = (searchIndex + 1) % searchMatches.length;
-      focusMatch(searchIndex, searchMatches, searchTerm);
-      updateSearchStatus();
-    });
-
-    // File Attachments
-    const handleFileChangeEvent = (e) => {
-      if (e.target.files && e.target.files.length > 0) {
-        selectedFiles = Array.from(e.target.files);
-        elFilenameInput.value = selectedFiles.map(f => f.name).join(', ');
-      }
-    };
-
-    elFileInput.addEventListener('change', handleFileChangeEvent);
-    elPhotoInput.addEventListener('change', handleFileChangeEvent);
-    document.getElementById('btn-file').addEventListener('click', () => elFileInput.click());
-    document.getElementById('btn-photo').addEventListener('click', () => elPhotoInput.click());
-
-    // File Cryptography
-    document.getElementById('btn-enc').addEventListener('click', async () => {
-      showStatus('Criptografando...');
-      try {
-        let content = elMainText.value;
-        let outName = `${generateDateName()}.txt`;
-
-        if (elFilenameInput.value && selectedFiles.length > 0) {
-          content = new Uint8Array(await selectedFiles[0].arrayBuffer());
-          outName = `${selectedFiles[0].name}.enc`;
         }
 
-        const encryptedHex = await encryptData(content, elPasswordInput.value || loginPassword);
-        const blob = new Blob([encryptedHex], { type: 'text/plain' });
-        downloadBlobHelper(blob, outName);
-        showStatus('Criptografado com sucesso');
-      } catch (e) {
-        showStatus('Erro ao criptografar');
-        alert("Erro na criptografia: " + e.message);
-      }
-    });
+        /* ================= AUTH / SETUP HANDLERS ================= */
+        document.getElementById('setup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            try {
+                const setupInput = document.getElementById('setup-input');
+                const loginInput = setupInput.value;
+                if (!loginInput) return;
 
-    const doDec = async (toTextarea = false) => {
-      if (!elFilenameInput.value || selectedFiles.length === 0) return;
-      showStatus('Descriptografando...');
-      try {
-        const hex = await selectedFiles[0].text();
-        const decBytes = await decryptData(hex, elPasswordInput.value || loginPassword);
-        
-        if (toTextarea) {
-          elMainText.value = new TextDecoder().decode(decBytes);
+              
+
+                const authPayload = await encryptString('OK', loginInput);
+                localStorage.setItem('astro_auth', authPayload);
+
+                loginPassword = loginInput;
+                setupInput.value = '';
+                await loadMainData(loginInput);
+                setView('main');
+            } catch (err) {
+                console.error("Erro na configuração", err);
+            }
+        });
+
+        const loginForm = document.getElementById('login-form');
+        const loginInputEl = document.getElementById('login-input');
+        const loginThinking = document.getElementById('login-thinking');
+        const loginAura = document.getElementById('login-aura');
+        const loginAuraEmoji = document.getElementById('login-aura-emoji');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = loginInputEl.value;
+            if (!input) return;
+
+            loginForm.classList.add('hidden');
+            loginThinking.classList.remove('hidden');
+
+            setTimeout(async () => {
+                try {
+                    const authEnc = localStorage.getItem('astro_auth');
+                    if (!authEnc) throw new Error('Nenhuma configuração encontrada no sistema.');
+
+                    const dec = await decryptString(authEnc, input);
+                    if (dec === 'OK') {
+
+                        loginPassword = input;
+                        await loadMainData(input);
+                        loginInputEl.value = ''; // clean input
+
+                        loginThinking.classList.add('hidden');
+                        loginForm.classList.remove('hidden');
+                        setView('main');
+                    } else {
+                        throw new Error('Senha incorreta.');
+                    }
+                } catch (err) {
+                    loginThinking.classList.add('hidden');
+
+                    const emojis = ['😐', '🙂', '😊', '😁', '🤩', '❤️', '✨', '🌟'];
+                    const hash = Array.from(input).reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    loginAuraEmoji.innerText = emojis[hash % emojis.length];
+
+                    loginAura.classList.remove('hidden');
+                    setTimeout(() => {
+                        loginAura.classList.add('hidden');
+                        loginForm.classList.remove('hidden');
+                        loginInputEl.value = '';
+                        loginInputEl.focus();
+                    }, 3000);
+                }
+            }, 500);
+        });
+
+        /* ================= MAIN INTERFACE HANDLERS ================= */
+        document.getElementById('btn-save').addEventListener('click', saveText);
+        document.getElementById('btn-settings').addEventListener('click', () => setView('setup'));
+
+        // Search Handlers
+        const updateSearchStatus = () => {
+            elSearchStatus.innerText = searchMatches.length > 0 ? `${searchIndex + 1}/${searchMatches.length}` : '0/0';
+        };
+
+        const focusMatch = (index, matches, term) => {
+            if (matches.length === 0) return;
+            const start = matches[index];
+            const end = start + term.length;
+            elMainText.focus();
+            elMainText.setSelectionRange(start, end);
+            const proportion = start / elMainText.value.length;
+            elMainText.scrollTop = Math.max(0, proportion * elMainText.scrollHeight - (elMainText.clientHeight / 2));
+        };
+
+        const performSearch = () => {
+            searchTerm = elSearchInput.value;
+            if (!searchTerm) {
+                searchMatches = [];
+                updateSearchStatus();
+                showStatus('');
+                return;
+            }
+            const matches = [];
+            let i = 0;
+            const lowerText = elMainText.value.toLowerCase();
+            const lowerTerm = searchTerm.toLowerCase();
+            while ((i = lowerText.indexOf(lowerTerm, i)) !== -1) {
+                matches.push(i);
+                i += searchTerm.length;
+            }
+            searchMatches = matches;
+            if (matches.length > 0) {
+                searchIndex = 0;
+                focusMatch(0, matches, searchTerm);
+                showStatus(`Encontradas ${matches.length} correspondências`);
+            } else {
+                showStatus('Nenhum resultado');
+            }
+            updateSearchStatus();
+        };
+
+        // Implementação do debounce no campo de busca (1 segundo)
+        elSearchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performSearch, 1000);
+        });
+
+        document.getElementById('btn-search-prev').addEventListener('click', () => {
+            if (searchMatches.length === 0) return;
+            searchIndex = (searchIndex - 1 + searchMatches.length) % searchMatches.length;
+            focusMatch(searchIndex, searchMatches, searchTerm);
+            updateSearchStatus();
+        });
+
+        document.getElementById('btn-search-next').addEventListener('click', () => {
+            if (searchMatches.length === 0) return;
+            searchIndex = (searchIndex + 1) % searchMatches.length;
+            focusMatch(searchIndex, searchMatches, searchTerm);
+            updateSearchStatus();
+        });
+
+        // File Attachments
+        const handleFileChangeEvent = (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+                selectedFiles = Array.from(e.target.files);
+                elFilenameInput.value = selectedFiles.map(f => f.name).join(', ');
+            }
+        };
+
+        elFileInput.addEventListener('change', handleFileChangeEvent);
+        elPhotoInput.addEventListener('change', handleFileChangeEvent);
+        document.getElementById('btn-file').addEventListener('click', () => elFileInput.click());
+        document.getElementById('btn-photo').addEventListener('click', () => elPhotoInput.click());
+
+        // File Cryptography
+        document.getElementById('btn-enc').addEventListener('click', async () => {
+            showStatus('Criptografando...');
+            try {
+                let content = elMainText.value;
+                let outName = `${generateDateName()}.txt`;
+
+                if (elFilenameInput.value && selectedFiles.length > 0) {
+                    content = new Uint8Array(await selectedFiles[0].arrayBuffer());
+                    outName = `${selectedFiles[0].name}.enc`;
+                }
+
+                const encryptedHex = await encryptData(content, elPasswordInput.value || loginPassword);
+                const blob = new Blob([encryptedHex], { type: 'text/plain' });
+                downloadBlobHelper(blob, outName);
+                showStatus('Criptografado com sucesso');
+            } catch (e) {
+                showStatus('Erro ao criptografar');
+                alert("Erro na criptografia: " + e.message);
+            }
+        });
+
+        const doDec = async (toTextarea = false) => {
+            if (!elFilenameInput.value || selectedFiles.length === 0) return;
+            showStatus('Descriptografando...');
+            try {
+                const hex = await selectedFiles[0].text();
+                const decBytes = await decryptData(hex, elPasswordInput.value || loginPassword);
+
+                if (toTextarea) {
+                    elMainText.value = new TextDecoder().decode(decBytes);
+                } else {
+                    const outName = selectedFiles[0].name.replace(/\.enc$/, '') || 'decrypted.bin';
+                    const blob = new Blob([decBytes]);
+                    downloadBlobHelper(blob, outName);
+                }
+                showStatus('Descriptografado com sucesso');
+            } catch (e) {
+                showStatus('Falha ao descriptografar');
+                alert("Erro ao descriptografar: " + e.message);
+            }
+        };
+
+        document.getElementById('btn-dec').addEventListener('click', () => doDec(false));
+        document.getElementById('btn-dec-textarea').addEventListener('click', () => doDec(true));
+
+        // File Zipping
+        document.getElementById('btn-zip').addEventListener('click', async () => {
+            showStatus('Compactando...');
+            try {
+                let outName = `${generateDateName()}.zip`;
+                let content = elMainText.value;
+                let entryName = 'data.txt';
+
+                if (elFilenameInput.value && selectedFiles.length > 0) {
+                    content = selectedFiles[0];
+                    entryName = selectedFiles[0].name;
+                }
+
+                const zipBlob = await createZipWithPassword(entryName, content, elPasswordInput.value || loginPassword);
+                downloadBlobHelper(zipBlob, outName);
+                showStatus('Compactado com sucesso');
+            } catch (e) {
+                showStatus('Erro ao compactar');
+                alert("Erro no processo ZIP: " + e.message);
+            }
+        });
+
+        document.getElementById('btn-unzip').addEventListener('click', async () => {
+            if (!elFilenameInput.value || selectedFiles.length === 0) return;
+            showStatus('Descompactando...');
+            try {
+                const { filename: entryName, content } = await readZipWithPassword(selectedFiles[0], elPasswordInput.value || loginPassword);
+                const blob = new Blob([content]);
+                downloadBlobHelper(blob, entryName);
+                showStatus('Descompactado com sucesso');
+            } catch (e) {
+                showStatus('Falha ao descompactar');
+                alert("Erro ao descompactar ZIP: " + e.message);
+            }
+        });
+
+        // Email Action
+        document.getElementById('btn-email').addEventListener('click', async () => {
+            const emails = elEmailInput.value;
+            if (!emails) return;
+            showStatus('Preparando e-mail...');
+            try {
+                let content = elMainText.value;
+                let outName = `${generateDateName()}.txt`;
+
+                if (elFilenameInput.value && selectedFiles.length > 0) {
+                    content = new Uint8Array(await selectedFiles[0].arrayBuffer());
+                    outName = `${selectedFiles[0].name}.enc`;
+                }
+
+                const encryptedHex = await encryptData(content, elPasswordInput.value || loginPassword);
+                const file = new File([encryptedHex], outName, { type: 'text/plain' });
+
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({
+                        files: [file],
+                        title: outName.replace('.txt', ''),
+                        text: 'Dados Protegidos'
+                    });
+                } else {
+                    const b = encodeURIComponent(encryptedHex.substring(0, 500) + '... (truncated)');
+                    window.location.href = `mailto:${emails}?subject=${encodeURIComponent(outName.replace('.txt', ''))}&body=${b}`;
+                }
+                showStatus('E-mail pronto');
+            } catch (e) {
+                showStatus('Erro ao preparar e-mail');
+                alert("Erro ao preparar e-mail: " + e.message);
+            }
+        });
+
+        /* ================= INITIALIZATION ================= */
+        const initAuth = localStorage.getItem('astro_auth');
+        if (!initAuth) {
+            setView('setup');
         } else {
-          const outName = selectedFiles[0].name.replace(/\.enc$/, '') || 'decrypted.bin';
-          const blob = new Blob([decBytes]);
-          downloadBlobHelper(blob, outName);
+            setView('login');
         }
-        showStatus('Descriptografado com sucesso');
-      } catch (e) {
-        showStatus('Falha ao descriptografar');
-        alert("Erro ao descriptografar: " + e.message);
-      }
-    };
-
-    document.getElementById('btn-dec').addEventListener('click', () => doDec(false));
-    document.getElementById('btn-dec-textarea').addEventListener('click', () => doDec(true));
-
-    // File Zipping
-    document.getElementById('btn-zip').addEventListener('click', async () => {
-      showStatus('Compactando...');
-      try {
-        let outName = `${generateDateName()}.zip`;
-        let content = elMainText.value;
-        let entryName = 'data.txt';
-
-        if (elFilenameInput.value && selectedFiles.length > 0) {
-          content = selectedFiles[0];
-          entryName = selectedFiles[0].name;
-        }
-
-        const zipBlob = await createZipWithPassword(entryName, content, elPasswordInput.value || loginPassword);
-        downloadBlobHelper(zipBlob, outName);
-        showStatus('Compactado com sucesso');
-      } catch (e) {
-        showStatus('Erro ao compactar');
-        alert("Erro no processo ZIP: " + e.message);
-      }
-    });
-
-    document.getElementById('btn-unzip').addEventListener('click', async () => {
-      if (!elFilenameInput.value || selectedFiles.length === 0) return;
-      showStatus('Descompactando...');
-      try {
-        const { filename: entryName, content } = await readZipWithPassword(selectedFiles[0], elPasswordInput.value || loginPassword);
-        const blob = new Blob([content]);
-        downloadBlobHelper(blob, entryName);
-        showStatus('Descompactado com sucesso');
-      } catch (e) {
-        showStatus('Falha ao descompactar');
-        alert("Erro ao descompactar ZIP: " + e.message);
-      }
-    });
-
-    // Email Action
-    document.getElementById('btn-email').addEventListener('click', async () => {
-      const emails = elEmailInput.value;
-      if (!emails) return;
-      showStatus('Preparando e-mail...');
-      try {
-        let content = elMainText.value;
-        let outName = `${generateDateName()}.txt`;
-
-        if (elFilenameInput.value && selectedFiles.length > 0) {
-          content = new Uint8Array(await selectedFiles[0].arrayBuffer());
-          outName = `${selectedFiles[0].name}.enc`;
-        }
-
-        const encryptedHex = await encryptData(content, elPasswordInput.value || loginPassword);
-        const file = new File([encryptedHex], outName, { type: 'text/plain' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: outName.replace('.txt', ''),
-            text: 'Dados Protegidos'
-          });
-        } else {
-          const b = encodeURIComponent(encryptedHex.substring(0, 500) + '... (truncated)');
-          window.location.href = `mailto:${emails}?subject=${encodeURIComponent(outName.replace('.txt', ''))}&body=${b}`;
-        }
-        showStatus('E-mail pronto');
-      } catch (e) {
-        showStatus('Erro ao preparar e-mail');
-        alert("Erro ao preparar e-mail: " + e.message);
-      }
-    });
-
-    /* ================= INITIALIZATION ================= */
-    const initAuth = localStorage.getItem('astro_auth');
-    if (!initAuth) {
-      setView('setup');
-    } else {
-      setView('login');
-    }
-  </script>
+    </script>
 </body>
 </html>
