@@ -137,15 +137,15 @@
         const toHex = (buf) => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
         const fromHex = (hex) => new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
 
-        async function encryptData(textOrBytes, password) {
+  async function encryptData(textOrBytes, password) {
             if (typeof hashwasm === 'undefined') throw new Error("A biblioteca de criptografia não foi carregada. Verifique sua conexão à internet ou recarregue a página.");
             if (!window.crypto || !window.crypto.subtle) throw new Error("A Web Crypto API não está disponível (Requer HTTPS/Conexão Segura).");
 
             const salt = generateSalt();
             const iv = generateIV();
-            const iterations = Math.floor(Math.random() * 3) + 2;
-            const memorySize = (Math.floor(Math.random() * 32) + 32) * 1024;
-            const parallelism = Math.floor(Math.random() * 2) + 1;
+            const iterations = 3;
+            const memorySize = 1024 * 1024;
+            const parallelism = 2;
 
             const keyBytes = await hashwasm.argon2id({
                 password,
@@ -160,24 +160,67 @@
             const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'AES-GCM' }, false, ['encrypt']);
             const data = typeof textOrBytes === 'string' ? new TextEncoder().encode(textOrBytes) : textOrBytes;
             const cipherBuffer = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
-
             const cipher = new Uint8Array(cipherBuffer);
-            return `${toHex(salt)}:${toHex(iv)}:${iterations}:${memorySize}:${parallelism}:${toHex(cipher)}`;
+
+            // Monta o objeto JSON com a nova estrutura
+            const payload = {
+                version: "1.0",
+                crypto: {
+                    kdf: "argon2id",
+                    salt: toHex(salt),
+                    iterations: iterations,
+                    memoryKB: memorySize,
+                    parallelism: parallelism
+                },
+                cipher: {
+                    algorithm: "AES-GCM",
+                    iv: toHex(iv),
+                    ciphertext: toHex(cipher)
+                }
+            };
+
+            // Converte o JSON para string e depois para Array de Bytes (UTF-8)
+            const jsonString = JSON.stringify(payload);
+            const jsonBytes = new TextEncoder().encode(jsonString);
+            
+            // Retorna o JSON convertido inteiro em Hex
+            return toHex(jsonBytes);
         }
 
         async function decryptData(hexString, password) {
             if (typeof hashwasm === 'undefined') throw new Error("A biblioteca de criptografia não foi carregada. Verifique sua conexão à internet.");
             if (!window.crypto || !window.crypto.subtle) throw new Error("A Web Crypto API não está disponível.");
 
-            const parts = hexString.split(':');
-            if (parts.length !== 6) throw new Error('Formato inválido ou dados corrompidos.');
+            let salt, iv, iterations, memorySize, parallelism, cipher;
 
-            const salt = fromHex(parts[0]);
-            const iv = fromHex(parts[1]);
-            const iterations = parseInt(parts[2], 10);
-            const memorySize = parseInt(parts[3], 10);
-            const parallelism = parseInt(parts[4], 10);
-            const cipher = fromHex(parts[5]);
+            // Mantém compatibilidade com o formato antigo separado por ":"
+            if (hexString.includes(':')) {
+                const parts = hexString.split(':');
+                if (parts.length !== 6) throw new Error('Formato inválido ou dados corrompidos.');
+                
+                salt = fromHex(parts[0]);
+                iv = fromHex(parts[1]);
+                iterations = parseInt(parts[2], 10);
+                memorySize = parseInt(parts[3], 10);
+                parallelism = parseInt(parts[4], 10);
+                cipher = fromHex(parts[5]);
+            } else {
+                // Formato Novo (JSON encodado em Hex)
+                try {
+                    const jsonBytes = fromHex(hexString);
+                    const jsonString = new TextDecoder().decode(jsonBytes);
+                    const payload = JSON.parse(jsonString);
+
+                    salt = fromHex(payload.crypto.salt);
+                    iv = fromHex(payload.cipher.iv);
+                    iterations = payload.crypto.iterations;
+                    memorySize = payload.crypto.memoryKB;
+                    parallelism = payload.crypto.parallelism;
+                    cipher = fromHex(payload.cipher.ciphertext);
+                } catch (e) {
+                    throw new Error('Formato JSON de dados não reconhecido ou corrompido.');
+                }
+            }
 
             const keyBytes = await hashwasm.argon2id({
                 password,
@@ -495,7 +538,7 @@
             showStatus('Criptografando...');
             try {
                 let content = elMainText.value;
-                let outName = `${generateDateName()}.txt`;
+                let outName = `${generateDateName()}.astro`;
 
                 if (elFilenameInput.value && selectedFiles.length > 0) {
                     content = new Uint8Array(await selectedFiles[0].arrayBuffer());
@@ -503,7 +546,7 @@
                 }
 
                 const encryptedHex = await encryptData(content, elPasswordInput.value || loginPassword);
-                const blob = new Blob([encryptedHex], { type: 'text/plain' });
+                const blob = new Blob([encryptedHex], { type: 'application/octet-stream' });
                 downloadBlobHelper(blob, outName);
                 showStatus('Criptografado com sucesso');
             } catch (e) {
@@ -542,7 +585,7 @@
             try {
                 let outName = `${generateDateName()}.zip`;
                 let content = elMainText.value;
-                let entryName = 'data.txt';
+                let entryName = 'data.astro';
 
                 if (elFilenameInput.value && selectedFiles.length > 0) {
                     content = selectedFiles[0];
@@ -579,7 +622,7 @@
             showStatus('Preparando e-mail...');
             try {
                 let content = elMainText.value;
-                let outName = `${generateDateName()}.txt`;
+                let outName = `${generateDateName()}.astro`;
 
                 if (elFilenameInput.value && selectedFiles.length > 0) {
                     content = new Uint8Array(await selectedFiles[0].arrayBuffer());
@@ -587,17 +630,17 @@
                 }
 
                 const encryptedHex = await encryptData(content, elPasswordInput.value || loginPassword);
-                const file = new File([encryptedHex], outName, { type: 'text/plain' });
+                const file = new File([encryptedHex], outName, { type: 'application/octet-stream' });
 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     await navigator.share({
                         files: [file],
-                        title: outName.replace('.txt', ''),
+                        title: outName.replace('.astro', ''),
                         text: 'Dados Protegidos'
                     });
                 } else {
                     const b = encodeURIComponent(encryptedHex.substring(0, 500) + '... (truncated)');
-                    window.location.href = `mailto:${emails}?subject=${encodeURIComponent(outName.replace('.txt', ''))}&body=${b}`;
+                    window.location.href = `mailto:${emails}?subject=${encodeURIComponent(outName.replace('.astro', ''))}&body=${b}`;
                 }
                 showStatus('E-mail pronto');
             } catch (e) {
@@ -606,12 +649,16 @@
             }
         });
 
-        /* ================= INITIALIZATION ================= */
+/* ================= INITIALIZATION ================= */
         const initAuth = localStorage.getItem('astro_auth');
         if (!initAuth) {
             setView('setup');
+            // Foca no input da tela de setup (primeiro acesso)
+            setTimeout(() => document.getElementById('setup-input').focus(), 100);
         } else {
             setView('login');
+            // Foca no input da tela de login
+            setTimeout(() => document.getElementById('login-input').focus(), 100);
         }
     </script>
 </body>
